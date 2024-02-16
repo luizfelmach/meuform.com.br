@@ -1,15 +1,60 @@
+import * as yup from "yup";
 import { AuthLayout } from "@/components/interface/auth-layout";
-import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { FormProvider, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Form, useActionData, useSubmit } from "@remix-run/react";
+import { ActionFunctionArgs, json } from "@remix-run/node";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
-export const loader = async () => {
-  if (true) {
-    //throw json("Not found", { status: 401 });
+const signInSchema = yup.object({
+  email: yup.string().email("E-mail inválido.").required("Digite seu e-mail."),
+  password: yup.string().required("Digite sua senha."),
+});
+
+type signInType = yup.InferType<typeof signInSchema>;
+
+export async function action({ request, context, params }: ActionFunctionArgs) {
+  const body = Object.fromEntries(await request.formData());
+  console.log(body);
+
+  if (body.email === "luizfelmach@gmail.com") {
+    return {
+      error: false,
+      message: "",
+    };
   }
-  return json({ ok: false });
-};
+
+  return json({
+    error: true,
+    message: "Credenciais informadas estão incorretas.",
+  });
+}
 
 export default function Page() {
+  const submit = useSubmit();
+  const actionData = useActionData<typeof action>();
+  const methods = useForm<signInType>({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    resolver: yupResolver(signInSchema),
+  });
+
+  const {
+    formState: { isSubmitting },
+  } = methods;
+
+  async function handleSubmit(data: signInType) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    submit(data, { method: "POST" });
+  }
+
+  useEffect(() => {
+    if (actionData?.error) toast.error(actionData.message);
+  }, [actionData]);
+
   return (
     <AuthLayout.Root>
       <AuthLayout.Main>
@@ -20,18 +65,27 @@ export default function Page() {
             Acesse sua plataforma.
           </AuthLayout.Description>
         </AuthLayout.Header>
-        <h1 className="font-sans">sans</h1>
-        <h1 className="font-serif">serif</h1>
-        <h1 className="font-mono">mon</h1>
-        <h1 className="font-thin">thin</h1>
-        <h1 className="font-extralight">font-extralight</h1>
-        <h1 className="font-light">font-light</h1>
-        <h1 className="font-normal">font-normal</h1>
-        <h1 className="font-medium">font-medium</h1>
-        <h1 className="font-semibold">font-semibold</h1>
-        <h1 className="font-bold">font-bold</h1>
-        <h1 className="font-extrabold">font-extrabold</h1>
-        <h1 className="font-black">font-black</h1>
+        <FormProvider {...methods}>
+          <form
+            onSubmit={methods.handleSubmit(handleSubmit)}
+            className="mt-12 space-y-6"
+          >
+            <AuthLayout.InputText
+              type="text"
+              name="email"
+              placeholder="E-mail"
+            />
+            <AuthLayout.InputText
+              type="password"
+              name="password"
+              placeholder="Senha"
+            />
+            <AuthLayout.SendButton
+              label="Acessar"
+              isSubmitting={isSubmitting}
+            />
+          </form>
+        </FormProvider>
       </AuthLayout.Main>
       <AuthLayout.Aside>
         <AuthLayout.Banner />

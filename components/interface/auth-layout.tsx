@@ -1,5 +1,10 @@
+import { useFormContext } from "react-hook-form";
 import { Header } from "./header";
 import { LogoFull } from "./logo";
+import { FormControl, FormField, FormItem, FormMessage } from "../ui/form";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { Loader } from "lucide-react";
 
 interface AuthLayoutRootProps {
   children?: React.ReactNode;
@@ -64,6 +69,58 @@ function AuthLayoutLogoFull() {
   );
 }
 
+interface AuthLayoutInputTextProps {
+  type?: string;
+  placeholder: string;
+  name: string;
+}
+
+function AuthLayoutInputText({
+  type = "text",
+  placeholder,
+  name,
+}: AuthLayoutInputTextProps) {
+  const { control } = useFormContext();
+  return (
+    <FormField
+      name={name}
+      control={control}
+      render={({ field }) => (
+        <FormItem>
+          <FormControl>
+            <Input
+              type={type}
+              placeholder={placeholder}
+              className="bg-accent border-none h-12"
+              {...field}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+interface AuthLayoutSendButton {
+  isSubmitting?: boolean;
+  label: string;
+}
+
+function AuthLayoutSendButton({ isSubmitting, label }: AuthLayoutSendButton) {
+  return (
+    <Button
+      type="submit"
+      className="w-full h-10 font-bold "
+      disabled={isSubmitting}
+      variant={"default"}
+    >
+      {label}
+      {isSubmitting && <Loader className="animate-spin" />}
+    </Button>
+  );
+}
+
 export const AuthLayout = {
   Root: AuthLayoutRoot,
   Aside: AuthLayoutAside,
@@ -73,4 +130,6 @@ export const AuthLayout = {
   Header: Header.Root,
   Title: Header.Title,
   Description: Header.Description,
+  InputText: AuthLayoutInputText,
+  SendButton: AuthLayoutSendButton,
 };
