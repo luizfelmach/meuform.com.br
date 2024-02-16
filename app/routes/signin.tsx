@@ -20,6 +20,18 @@ export default function Page() {
             Acesse sua plataforma.
           </AuthLayout.Description>
         </AuthLayout.Header>
+        <h1 className="font-sans">sans</h1>
+        <h1 className="font-serif">serif</h1>
+        <h1 className="font-mono">mon</h1>
+        <h1 className="font-thin">thin</h1>
+        <h1 className="font-extralight">font-extralight</h1>
+        <h1 className="font-light">font-light</h1>
+        <h1 className="font-normal">font-normal</h1>
+        <h1 className="font-medium">font-medium</h1>
+        <h1 className="font-semibold">font-semibold</h1>
+        <h1 className="font-bold">font-bold</h1>
+        <h1 className="font-extrabold">font-extrabold</h1>
+        <h1 className="font-black">font-black</h1>
       </AuthLayout.Main>
       <AuthLayout.Aside>
         <AuthLayout.Banner />
