@@ -5,6 +5,7 @@ import { FormControl, FormField, FormItem, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader } from "lucide-react";
+import { useNavigation } from "@remix-run/react";
 
 interface AuthLayoutRootProps {
   children?: React.ReactNode;
@@ -107,7 +108,10 @@ interface AuthLayoutSendButton {
   label: string;
 }
 
-function AuthLayoutSendButton({ isSubmitting, label }: AuthLayoutSendButton) {
+function AuthLayoutSendButton({ label }: AuthLayoutSendButton) {
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+
   return (
     <Button
       type="submit"

@@ -4,13 +4,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { prisma } from "@/lib/prisma";
 import { hash } from "@/lib/crypt";
-import { commitSession, getSession } from "@/lib/session";
-import {
-  Link,
-  useLoaderData,
-  useNavigation,
-  useSubmit,
-} from "@remix-run/react";
+import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
@@ -20,51 +14,19 @@ import {
 } from "@remix-run/node";
 import { stripe } from "@/lib/stripe";
 import { useFlash } from "@/components/hook/flash";
-
-export const meta: MetaFunction = () => {
-  return [
-    { title: "Meu Form | Criar conta" },
-    {
-      name: "Crie uma conta na plataforma Meu Form.",
-      content: "Página para criar uma conta.",
-    },
-  ];
-};
-
-export const signUpSchema = yup.object({
-  name: yup.string().required("Digite seu nome."),
-  email: yup.string().email("E-mail inválido.").required("Digite seu e-mail."),
-  password: yup
-    .string()
-    .required("Digite sua senha.")
-    .min(6, "Mínimo de 6 caracteres."),
-  confirmPassword: yup
-    .string()
-    .required("Confirme sua senha.")
-    .oneOf([yup.ref("password")], "Sua senha não confere."),
-});
-
-type signUpType = yup.InferType<typeof signUpSchema>;
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-
-  if (session.has("id")) return redirect("/dashboard");
-
-  const data = { error: session.get("error"), success: session.get("success") };
-
-  return json(data, {
-    headers: { "Set-Cookie": await commitSession(session) },
-  });
-}
+import {
+  flashError,
+  getFlash,
+  headerSession,
+  reqSession,
+} from "@/action/session";
+import { unauthenticated } from "@/action/auth";
 
 export default function Page() {
   const flash = useLoaderData<typeof loader>();
   useFlash(flash);
 
   const submit = useSubmit();
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting";
 
   const methods = useForm<signUpType>({
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
@@ -110,10 +72,7 @@ export default function Page() {
               name="confirmPassword"
               placeholder="Confirme sua senha"
             />
-            <AuthLayout.SendButton
-              label="Criar conta"
-              isSubmitting={isSubmitting}
-            />
+            <AuthLayout.SendButton label="Criar conta" />
           </form>
         </FormProvider>
         <div className="flex justify-center py-14">
@@ -135,27 +94,52 @@ export default function Page() {
   );
 }
 
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Meu Form | Criar conta" },
+    {
+      name: "Crie uma conta na plataforma Meu Form.",
+      content: "Página para criar uma conta.",
+    },
+  ];
+};
+
+export const signUpSchema = yup.object({
+  name: yup.string().required("Digite seu nome."),
+  email: yup.string().email("E-mail inválido.").required("Digite seu e-mail."),
+  password: yup
+    .string()
+    .required("Digite sua senha.")
+    .min(6, "Mínimo de 6 caracteres."),
+  confirmPassword: yup
+    .string()
+    .required("Confirme sua senha.")
+    .oneOf([yup.ref("password")], "Sua senha não confere."),
+});
+
+type signUpType = yup.InferType<typeof signUpSchema>;
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await reqSession(request);
+
+  await unauthenticated(request);
+  const flash = getFlash(session);
+
+  return json(flash, { ...(await headerSession(session)) });
+}
+
 export async function action({ request }: ActionFunctionArgs) {
+  await unauthenticated(request);
   const body = Object.fromEntries(await request.formData());
   const { name, email, password } = await signUpSchema.validate(body);
 
-  const session = await getSession(request.headers.get("Cookie"));
+  const session = await reqSession(request);
 
-  const exists = await prisma.customer.findFirst({
-    where: {
-      email,
-    },
-  });
+  const exists = await prisma.customer.findFirst({ where: { email } });
 
   if (exists) {
-    session.flash("error", {
-      message: "Alguém já está usando esse e-mail.",
-      id: Math.random(),
-    });
-
-    return redirect("/signup", {
-      headers: { "Set-Cookie": await commitSession(session) },
-    });
+    flashError(session, "Alguém já está usando esse e-mail.");
+    return redirect("/signup", { ...(await headerSession(session)) });
   }
 
   const hashPassword = hash(password);
@@ -172,8 +156,5 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   session.set("id", customer.id);
-
-  return redirect("/dashboard", {
-    headers: { "Set-Cookie": await commitSession(session) },
-  });
+  return redirect("/dashboard", { ...(await headerSession(session)) });
 }

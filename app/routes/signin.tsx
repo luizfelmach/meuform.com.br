@@ -4,13 +4,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { prisma } from "@/lib/prisma";
 import { compare } from "@/lib/crypt";
-import { commitSession, getSession } from "@/lib/session";
-import {
-  Link,
-  useLoaderData,
-  useNavigation,
-  useSubmit,
-} from "@remix-run/react";
+import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
@@ -19,43 +13,18 @@ import {
   redirect,
 } from "@remix-run/node";
 import { useFlash } from "@/components/hook/flash";
-
-export const meta: MetaFunction = () => {
-  return [
-    { title: "Meu Form | Acessar" },
-    {
-      name: "Acesse a plataforma Meu Form.",
-      content: "Página de autenticação.",
-    },
-  ];
-};
-
-const signInSchema = yup.object({
-  email: yup.string().email("E-mail inválido.").required("Digite seu e-mail."),
-  password: yup.string().required("Digite sua senha."),
-});
-
-type signInType = yup.InferType<typeof signInSchema>;
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-
-  if (session.has("id")) return redirect("/dashboard");
-
-  const data = { error: session.get("error"), success: session.get("success") };
-
-  return json(data, {
-    headers: { "Set-Cookie": await commitSession(session) },
-  });
-}
+import { unauthenticated } from "@/action/auth";
+import {
+  flashError,
+  getFlash,
+  headerSession,
+  reqSession,
+} from "@/action/session";
 
 export default function Page() {
+  const submit = useSubmit();
   const flash = useLoaderData<typeof loader>();
   useFlash(flash);
-
-  const submit = useSubmit();
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting";
 
   const methods = useForm<signInType>({
     defaultValues: { email: "", password: "" },
@@ -91,10 +60,7 @@ export default function Page() {
               name="password"
               placeholder="Senha"
             />
-            <AuthLayout.SendButton
-              label="Acessar"
-              isSubmitting={isSubmitting}
-            />
+            <AuthLayout.SendButton label="Acessar" />
           </form>
         </FormProvider>
         <div className="flex justify-end mt-8">
@@ -124,44 +90,52 @@ export default function Page() {
   );
 }
 
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Meu Form | Acessar" },
+    {
+      name: "Acesse a plataforma Meu Form.",
+      content: "Página de autenticação.",
+    },
+  ];
+};
+
+const signInSchema = yup.object({
+  email: yup.string().email("E-mail inválido.").required("Digite seu e-mail."),
+  password: yup.string().required("Digite sua senha."),
+});
+
+type signInType = yup.InferType<typeof signInSchema>;
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await reqSession(request);
+
+  await unauthenticated(request);
+  const flash = getFlash(session);
+
+  return json(flash, { ...(await headerSession(session)) });
+}
+
 export async function action({ request }: ActionFunctionArgs) {
+  await unauthenticated(request);
   const body = Object.fromEntries(await request.formData());
   const { email, password } = await signInSchema.validate(body);
+  const session = await reqSession(request);
 
-  const session = await getSession(request.headers.get("Cookie"));
-
-  const customer = await prisma.customer.findFirst({
-    where: {
-      email,
-    },
-  });
+  const customer = await prisma.customer.findFirst({ where: { email } });
 
   if (!customer) {
-    session.flash("error", {
-      message: "Credenciais informadas estão incorretas.",
-      id: Math.random(),
-    });
-
-    return redirect("/signin", {
-      headers: { "Set-Cookie": await commitSession(session) },
-    });
+    flashError(session, "Credenciais informadas estão incorretas.");
+    return redirect("/signin", { ...(await headerSession(session)) });
   }
 
   const passwordValid = compare(password, customer.password);
   if (!passwordValid) {
-    session.flash("error", {
-      message: "Credenciais informadas estão incorretas.",
-      id: Math.random(),
-    });
-
-    return redirect("/signin", {
-      headers: { "Set-Cookie": await commitSession(session) },
-    });
+    flashError(session, "Credenciais informadas estão incorretas.");
+    return redirect("/signin", { ...(await headerSession(session)) });
   }
 
   session.set("id", customer.id);
 
-  return redirect("/dashboard", {
-    headers: { "Set-Cookie": await commitSession(session) },
-  });
+  return redirect("/dashboard", { ...(await headerSession(session)) });
 }

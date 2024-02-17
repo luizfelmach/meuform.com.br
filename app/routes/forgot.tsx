@@ -2,16 +2,11 @@ import * as yup from "yup";
 import { AuthLayout } from "@/components/interface/auth-layout";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { commitSession, getSession } from "@/lib/session";
+import { getSession } from "@/lib/session";
 import * as crypto from "node:crypto";
 import { Forgot } from "@/components/template/forgot";
 import { resend } from "@/lib/resend";
-import {
-  Link,
-  useLoaderData,
-  useNavigation,
-  useSubmit,
-} from "@remix-run/react";
+import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
@@ -22,45 +17,20 @@ import {
 import { prisma } from "@/lib/prisma";
 import { useFlash } from "@/components/hook/flash";
 import { hash } from "@/lib/crypt";
-
-export const meta: MetaFunction = () => {
-  return [
-    { title: "Meu Form | Recuperar senha" },
-    {
-      name: "Recupere sua senha.",
-      content: "Página de recuperação de senha.",
-    },
-  ];
-};
-
-const forgotSchema = yup.object({
-  email: yup.string().email("E-mail inválido.").required("Digite seu e-mail."),
-});
-
-type forgotType = yup.InferType<typeof forgotSchema>;
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-
-  if (session.has("id")) return redirect("/dashboard");
-
-  const data = {
-    error: session.get("error"),
-    success: session.get("success"),
-  };
-
-  return json(data, {
-    headers: { "Set-Cookie": await commitSession(session) },
-  });
-}
+import {
+  flashError,
+  flashSuccess,
+  getFlash,
+  headerSession,
+  reqSession,
+} from "@/action/session";
+import { unauthenticated } from "@/action/auth";
 
 export default function Page() {
   const flash = useLoaderData<typeof loader>();
   useFlash(flash);
 
   const submit = useSubmit();
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting";
 
   const methods = useForm<forgotType>({
     defaultValues: { email: "" },
@@ -91,10 +61,7 @@ export default function Page() {
               name="email"
               placeholder="E-mail"
             />
-            <AuthLayout.SendButton
-              label="Enviar e-mail"
-              isSubmitting={isSubmitting}
-            />
+            <AuthLayout.SendButton label="Enviar e-mail" />
           </form>
         </FormProvider>
         <div className="flex justify-center py-14">
@@ -116,7 +83,33 @@ export default function Page() {
   );
 }
 
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Meu Form | Recuperar senha" },
+    {
+      name: "Recupere sua senha.",
+      content: "Página de recuperação de senha.",
+    },
+  ];
+};
+
+const forgotSchema = yup.object({
+  email: yup.string().email("E-mail inválido.").required("Digite seu e-mail."),
+});
+
+type forgotType = yup.InferType<typeof forgotSchema>;
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  await unauthenticated(request);
+
+  const session = await reqSession(request);
+  const flash = getFlash(session);
+
+  return json(flash, { ...(await headerSession(session)) });
+}
+
 export async function action({ request }: ActionFunctionArgs) {
+  await unauthenticated(request);
   const body = Object.fromEntries(await request.formData());
   const { email } = await forgotSchema.validate(body);
 
@@ -127,26 +120,17 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (!customer) {
-    session.flash("error", {
-      message: "Não foi possível encontrar seu e-mail.",
-      id: Math.random(),
-    });
-    return redirect("/forgot", {
-      headers: { "Set-Cookie": await commitSession(session) },
-    });
+    flashError(session, "Não foi possível encontrar seu e-mail.");
+    return redirect("/forgot", { ...(await headerSession(session)) });
   }
 
   let alreadyExistsToken = await prisma.passResetToken.findFirst({
-    where: {
-      customerId: customer.id,
-    },
+    where: { customerId: customer.id },
   });
 
   if (alreadyExistsToken) {
     await prisma.passResetToken.delete({
-      where: {
-        id: alreadyExistsToken.id,
-      },
+      where: { id: alreadyExistsToken.id },
     });
   }
 
@@ -170,11 +154,6 @@ export async function action({ request }: ActionFunctionArgs) {
     react: <Forgot name={customer.name} resetLink={resetLink.href} />,
   });
 
-  session.flash("success", {
-    message: "Enviamos um link para você redefinir sua senha.",
-    id: Math.random(),
-  });
-  return redirect("/forgot", {
-    headers: { "Set-Cookie": await commitSession(session) },
-  });
+  flashSuccess(session, "Enviamos um link para você redefinir sua senha.");
+  return redirect("/forgot", { ...(await headerSession(session)) });
 }
