@@ -10,6 +10,7 @@ import {
 } from "@remix-run/react";
 import styles from "./tailwind.css";
 import { Toaster } from "@/components/ui/sonner";
+import { Loading } from "@/components/interface/loading";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
@@ -26,6 +27,7 @@ export default function App() {
         <Links />
       </head>
       <body>
+        <Loading />
         <Outlet />
         <Toaster richColors theme="light" />
         <ScrollRestoration />
