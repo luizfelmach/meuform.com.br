@@ -3,9 +3,8 @@ import { AuthLayout } from "@/components/interface/auth-layout";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { prisma } from "@/lib/prisma";
-import { compare, hash } from "@/lib/crypt";
+import { hash } from "@/lib/crypt";
 import { commitSession, getSession } from "@/lib/session";
-import { useFlashError } from "@/components/hook/flash-error";
 import {
   Link,
   useLoaderData,
@@ -20,6 +19,7 @@ import {
   redirect,
 } from "@remix-run/node";
 import { stripe } from "@/lib/stripe";
+import { useFlash } from "@/components/hook/flash";
 
 export const meta: MetaFunction = () => {
   return [
@@ -51,7 +51,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (session.has("id")) return redirect("/dashboard");
 
-  const data = { error: session.get("error"), errorId: session.get("errorId") };
+  const data = { error: session.get("error"), success: session.get("success") };
 
   return json(data, {
     headers: { "Set-Cookie": await commitSession(session) },
@@ -59,8 +59,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Page() {
-  const flashError = useLoaderData<typeof loader>();
-  useFlashError(flashError);
+  const flash = useLoaderData<typeof loader>();
+  useFlash(flash);
 
   const submit = useSubmit();
   const navigation = useNavigation();
@@ -148,8 +148,10 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (exists) {
-    session.flash("error", "Alguém já está usando esse e-mail.");
-    session.flash("errorId", Math.random());
+    session.flash("error", {
+      message: "Alguém já está usando esse e-mail.",
+      id: Math.random(),
+    });
 
     return redirect("/signup", {
       headers: { "Set-Cookie": await commitSession(session) },

@@ -5,7 +5,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
 
   if (!session.has("id")) {
-    session.flash("error", "Você precisa se autenticar primeiro.");
+    session.flash("error", {
+      message: "Você precisa se autenticar primeiro.",
+      id: Math.random(),
+    });
     return redirect("/signin", {
       headers: { "Set-Cookie": await commitSession(session) },
     });

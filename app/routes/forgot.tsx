@@ -2,9 +2,8 @@ import * as yup from "yup";
 import { AuthLayout } from "@/components/interface/auth-layout";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { prisma } from "@/lib/prisma";
-import { compare } from "@/lib/crypt";
 import { commitSession, getSession } from "@/lib/session";
+import * as crypto from "node:crypto";
 import {
   Link,
   useLoaderData,
@@ -18,31 +17,35 @@ import {
   json,
   redirect,
 } from "@remix-run/node";
+import { prisma } from "@/lib/prisma";
 import { useFlash } from "@/components/hook/flash";
+import { hash } from "@/lib/crypt";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Meu Form | Acessar" },
+    { title: "Meu Form | Recuperar senha" },
     {
-      name: "Acesse a plataforma Meu Form.",
-      content: "Página de autenticação.",
+      name: "Recupere sua senha.",
+      content: "Página de recuperação de senha.",
     },
   ];
 };
 
-const signInSchema = yup.object({
+const forgotSchema = yup.object({
   email: yup.string().email("E-mail inválido.").required("Digite seu e-mail."),
-  password: yup.string().required("Digite sua senha."),
 });
 
-type signInType = yup.InferType<typeof signInSchema>;
+type forgotType = yup.InferType<typeof forgotSchema>;
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
 
   if (session.has("id")) return redirect("/dashboard");
 
-  const data = { error: session.get("error"), success: session.get("success") };
+  const data = {
+    error: session.get("error"),
+    success: session.get("success"),
+  };
 
   return json(data, {
     headers: { "Set-Cookie": await commitSession(session) },
@@ -57,12 +60,12 @@ export default function Page() {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
-  const methods = useForm<signInType>({
-    defaultValues: { email: "", password: "" },
-    resolver: yupResolver(signInSchema),
+  const methods = useForm<forgotType>({
+    defaultValues: { email: "" },
+    resolver: yupResolver(forgotSchema),
   });
 
-  async function handleSubmit(data: signInType) {
+  async function handleSubmit(data: forgotType) {
     submit(data, { method: "POST" });
   }
 
@@ -71,9 +74,9 @@ export default function Page() {
       <AuthLayout.Main>
         <AuthLayout.LogoFull />
         <AuthLayout.Header>
-          <AuthLayout.Title>Bem-vindo novamente!</AuthLayout.Title>
+          <AuthLayout.Title>Recuperar senha!</AuthLayout.Title>
           <AuthLayout.Description>
-            Acesse sua plataforma.
+            Informe seu e-mail. Enviaremos um link de recuperação.
           </AuthLayout.Description>
         </AuthLayout.Header>
         <FormProvider {...methods}>
@@ -86,34 +89,21 @@ export default function Page() {
               name="email"
               placeholder="E-mail"
             />
-            <AuthLayout.InputText
-              type="password"
-              name="password"
-              placeholder="Senha"
-            />
             <AuthLayout.SendButton
-              label="Acessar"
+              label="Enviar e-mail"
               isSubmitting={isSubmitting}
             />
           </form>
         </FormProvider>
-        <div className="flex justify-end mt-8">
-          <Link
-            to="/forgot"
-            className="ml-2 hover:underline text-sm leading-none font-bold"
-          >
-            Esqueceu a senha?
-          </Link>
-        </div>
         <div className="flex justify-center py-14">
           <small className="text-sm font-medium leading-none">
-            Não tem uma conta?{" "}
+            Já tem uma conta?{" "}
           </small>
           <Link
-            to="/signup"
+            to="/signin"
             className="ml-2 hover:underline text-sm leading-none font-bold"
           >
-            Registre-se
+            Acesse a plataforma
           </Link>
         </div>
       </AuthLayout.Main>
@@ -126,42 +116,52 @@ export default function Page() {
 
 export async function action({ request }: ActionFunctionArgs) {
   const body = Object.fromEntries(await request.formData());
-  const { email, password } = await signInSchema.validate(body);
+  const { email } = await forgotSchema.validate(body);
 
   const session = await getSession(request.headers.get("Cookie"));
 
   const customer = await prisma.customer.findFirst({
-    where: {
-      email,
-    },
+    where: { email },
   });
 
   if (!customer) {
     session.flash("error", {
-      message: "Credenciais informadas estão incorretas.",
+      message: "Não foi possível encontrar seu e-mail.",
       id: Math.random(),
     });
-
-    return redirect("/signin", {
+    return redirect("/forgot", {
       headers: { "Set-Cookie": await commitSession(session) },
     });
   }
 
-  const passwordValid = compare(password, customer.password);
-  if (!passwordValid) {
-    session.flash("error", {
-      message: "Credenciais informadas estão incorretas.",
-      id: Math.random(),
-    });
+  let alreadyExistsToken = await prisma.passResetToken.findFirst({
+    where: {
+      customerId: customer.id,
+    },
+  });
 
-    return redirect("/signin", {
-      headers: { "Set-Cookie": await commitSession(session) },
+  if (alreadyExistsToken) {
+    await prisma.passResetToken.delete({
+      where: {
+        id: alreadyExistsToken.id,
+      },
     });
   }
 
-  session.set("id", customer.id);
+  let resetToken = crypto.randomBytes(32).toString("hex");
+  let hashToken = hash(resetToken);
+  await prisma.passResetToken.create({
+    data: {
+      token: hashToken,
+      customerId: customer.id,
+    },
+  });
 
-  return redirect("/dashboard", {
+  session.flash("success", {
+    message: "Enviamos um link para você redefinir sua senha. " + hashToken,
+    id: Math.random(),
+  });
+  return redirect("/forgot", {
     headers: { "Set-Cookie": await commitSession(session) },
   });
 }
