@@ -52,7 +52,7 @@ function AuthLayoutBanner() {
       </Header.Root>
       <img
         alt="Preview de um formulário gerado no Meu Form."
-        src={"auth-banner.svg"}
+        src={"/auth-banner.svg"}
         width={700}
         height={200}
         className="mx-auto hover:-translate-y-3 transition duration-300"

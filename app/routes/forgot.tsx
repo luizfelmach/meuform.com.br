@@ -4,6 +4,8 @@ import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { commitSession, getSession } from "@/lib/session";
 import * as crypto from "node:crypto";
+import { Forgot } from "@/components/template/forgot";
+import { resend } from "@/lib/resend";
 import {
   Link,
   useLoaderData,
@@ -157,8 +159,19 @@ export async function action({ request }: ActionFunctionArgs) {
     },
   });
 
+  const resetLink = new URL("forgot/reset", request.url);
+  resetLink.searchParams.append("id", customer.id);
+  resetLink.searchParams.append("token", resetToken);
+
+  await resend.emails.send({
+    from: "Meu Form <meuform@resend.dev>",
+    to: [customer.email],
+    subject: "Recuperar senha | Meu Form",
+    react: <Forgot name={customer.name} resetLink={resetLink.href} />,
+  });
+
   session.flash("success", {
-    message: "Enviamos um link para você redefinir sua senha. " + hashToken,
+    message: "Enviamos um link para você redefinir sua senha.",
     id: Math.random(),
   });
   return redirect("/forgot", {
