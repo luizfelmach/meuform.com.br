@@ -2,22 +2,33 @@ import * as yup from "yup";
 import { AuthLayout } from "@/components/interface/auth-layout";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { prisma } from "@/lib/prisma";
+import { compare } from "@/lib/crypt";
+import { commitSession, getSession } from "@/lib/session";
+import { useFlashError } from "@/components/hook/flash-error";
 import {
   Link,
-  useActionData,
   useLoaderData,
+  useNavigation,
   useSubmit,
 } from "@remix-run/react";
 import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
+  MetaFunction,
   json,
   redirect,
 } from "@remix-run/node";
-import { useEffect } from "react";
-import { toast } from "sonner";
-import { prisma } from "@/lib/prisma";
-import { compare } from "@/lib/crypt";
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Meu Form | Acessar" },
+    {
+      name: "Acesse a plataforma Meu Form.",
+      content: "Página de autenticação.",
+    },
+  ];
+};
 
 const signInSchema = yup.object({
   email: yup.string().email("E-mail inválido.").required("Digite seu e-mail."),
@@ -26,87 +37,34 @@ const signInSchema = yup.object({
 
 type signInType = yup.InferType<typeof signInSchema>;
 
-import { commitSession, getSession } from "@/lib/session";
-
-export async function action({ request, context, params }: ActionFunctionArgs) {
-  const body = Object.fromEntries(await request.formData());
-  const { email, password } = await signInSchema.validate(body);
-
-  const session = await getSession(request.headers.get("Cookie"));
-
-  const customer = await prisma.customer.findFirst({
-    where: {
-      email,
-    },
-  });
-
-  if (!customer) {
-    session.flash("error", "Credenciais informadas estão incorretas.");
-
-    return redirect("/signin", {
-      headers: {
-        "Set-Cookie": await commitSession(session),
-      },
-    });
-  }
-
-  const passwordValid = compare(password, customer.password);
-  if (!passwordValid) {
-    session.flash("error", "Credenciais informadas estão incorretas.");
-
-    return redirect("/signin", {
-      headers: {
-        "Set-Cookie": await commitSession(session),
-      },
-    });
-  }
-
-  session.set("id", customer.id);
-
-  return redirect("/dashboard", {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
-  });
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
 
-  const data = { error: session.get("error"), id: Math.random() };
+  if (session.has("id")) return redirect("/dashboard");
+
+  const data = { error: session.get("error"), errorId: session.get("errorId") };
 
   return json(data, {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
+    headers: { "Set-Cookie": await commitSession(session) },
   });
 }
 
 export default function Page() {
+  const flashError = useLoaderData<typeof loader>();
+  useFlashError(flashError);
+
   const submit = useSubmit();
-  const { error, id } = useLoaderData<typeof loader>();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+
   const methods = useForm<signInType>({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
     resolver: yupResolver(signInSchema),
   });
-
-  const {
-    formState: { isSubmitting },
-  } = methods;
 
   async function handleSubmit(data: signInType) {
     submit(data, { method: "POST" });
   }
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (error) toast.error(error);
-    }, 400);
-    return () => clearTimeout(timeout);
-  }, [id]);
 
   return (
     <AuthLayout.Root>
@@ -164,4 +122,42 @@ export default function Page() {
       </AuthLayout.Aside>
     </AuthLayout.Root>
   );
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  const body = Object.fromEntries(await request.formData());
+  const { email, password } = await signInSchema.validate(body);
+
+  const session = await getSession(request.headers.get("Cookie"));
+
+  const customer = await prisma.customer.findFirst({
+    where: {
+      email,
+    },
+  });
+
+  if (!customer) {
+    session.flash("error", "Credenciais informadas estão incorretas.");
+    session.flash("errorId", Math.random());
+
+    return redirect("/signin", {
+      headers: { "Set-Cookie": await commitSession(session) },
+    });
+  }
+
+  const passwordValid = compare(password, customer.password);
+  if (!passwordValid) {
+    session.flash("error", "Credenciais informadas estão incorretas.");
+    session.flash("errorId", Math.random());
+
+    return redirect("/signin", {
+      headers: { "Set-Cookie": await commitSession(session) },
+    });
+  }
+
+  session.set("id", customer.id);
+
+  return redirect("/dashboard", {
+    headers: { "Set-Cookie": await commitSession(session) },
+  });
 }

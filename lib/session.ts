@@ -7,6 +7,7 @@ type SessionData = {
 
 type SessionFlashData = {
   error: string;
+  errorId: number;
 };
 
 export const { getSession, commitSession, destroySession } =
