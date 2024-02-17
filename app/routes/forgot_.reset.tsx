@@ -184,7 +184,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   session.flash("success", {
-    message: "Senha atualida. Acesse a plataforma.",
+    message: "Senha atualizada. Acesse a plataforma.",
     id: Math.random(),
   });
   return redirect("/signin", {
