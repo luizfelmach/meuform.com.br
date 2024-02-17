@@ -15,6 +15,9 @@ const envSchema = yup.object({
 
   STRIPE_PRIVATE_KEY: yup.string().required(),
   STRIPE_PUBLIC_KEY: yup.string().required(),
+
+  STRIPE_PRICE_MONTHLY: yup.string().required(),
+  STRIPE_PRICE_YEARLY: yup.string().required(),
 });
 
 export const env = envSchema.validateSync(process.env, { stripUnknown: true });
