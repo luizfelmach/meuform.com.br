@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  email     String @unique
+  password  String
+  name      String
+  paymentId String
+  forms     Form[]
+}
+
+model PassResetToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  customerId String   @db.ObjectId
+  token      String
+  createdAt  DateTime @default(now())
+}
+
+model Form {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  screens    Json[]
+  endScreen  Json
+  answers    Json[]
+  Customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId String?   @db.ObjectId
+}
