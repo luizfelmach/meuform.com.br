@@ -36,8 +36,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (plan === "yearly") product = env.STRIPE_PRICE_YEARLY;
 
   const customer = await prisma.customer.findFirst({ where: { id } });
-  const returnUrl = new URL("/dashboard", request.url);
-  returnUrl.searchParams.set("payment", "success");
+  const returnUrl = new URL(
+    "/payment?checkout_session={CHECKOUT_SESSION_ID}",
+    request.url
+  );
 
   const checkoutSession = await stripe.checkout.sessions.create({
     ui_mode: "embedded",

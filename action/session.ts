@@ -21,10 +21,18 @@ export function flashSuccess(session: SessionType, message: string) {
   });
 }
 
+export function flashPayment(session: SessionType, message: string) {
+  session.flash("payment", {
+    message,
+    id: Math.random(),
+  });
+}
+
 export function getFlash(session: SessionType) {
   const data = {
     error: session.get("error"),
     success: session.get("success"),
+    payment: session.get("payment"),
   };
   return data;
 }

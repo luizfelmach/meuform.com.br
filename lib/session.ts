@@ -1,4 +1,4 @@
-import { createCookieSessionStorage } from "@remix-run/node"; // or cloudflare/deno
+import { createCookieSessionStorage } from "@remix-run/node";
 import { env } from "./env";
 
 export type SessionData = {
@@ -8,6 +8,7 @@ export type SessionData = {
 export type SessionFlashData = {
   error?: { message: string; id: number };
   success?: { message: string; id: number };
+  payment?: { message: string; id: number };
 };
 
 export const { getSession, commitSession, destroySession } =
