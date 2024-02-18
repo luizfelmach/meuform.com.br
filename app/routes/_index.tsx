@@ -1,4 +1,4 @@
-import type { MetaFunction } from "@remix-run/node";
+import { redirect, type MetaFunction } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
   return [
@@ -6,6 +6,10 @@ export const meta: MetaFunction = () => {
     { name: "Crie formulários personalizados.", content: "Página inicial" },
   ];
 };
+
+export async function loader() {
+  return redirect("/signin");
+}
 
 export default function Index() {
   return (
