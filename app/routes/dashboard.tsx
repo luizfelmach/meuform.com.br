@@ -16,7 +16,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
 
   const flash = getFlash(session);
-  console.log(flash);
 
   if (url.searchParams.get("payment"))
     return json(flash, {
