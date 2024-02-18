@@ -9,7 +9,8 @@
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/index.js",
     "typecheck": "tsc",
-    "comp:add": "pnpm dlx shadcn-ui@latest add"
+    "comp:add": "pnpm dlx shadcn-ui@latest add",
+    "tunnel": "stripe listen --forward-to localhost:3000/webhook"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

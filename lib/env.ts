@@ -18,6 +18,8 @@ const envSchema = yup.object({
 
   STRIPE_PRICE_MONTHLY: yup.string().required(),
   STRIPE_PRICE_YEARLY: yup.string().required(),
+  STRIPE_PORTAL_URL: yup.string().required(),
+  ENDPOINT_SECRET: yup.string().required(),
 });
 
 export const env = envSchema.validateSync(process.env, { stripUnknown: true });

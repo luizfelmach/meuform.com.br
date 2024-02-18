@@ -8,12 +8,13 @@ datasource db {
 }
 
 model Customer {
-  id        String @id @default(auto()) @map("_id") @db.ObjectId
-  email     String @unique
-  password  String
-  name      String
-  paymentId String
-  forms     Form[]
+  id             String  @id @default(auto()) @map("_id") @db.ObjectId
+  email          String  @unique
+  password       String
+  name           String
+  paymentId      String  @unique
+  subscriptionId String?
+  forms          Form[]
 }
 
 model PassResetToken {

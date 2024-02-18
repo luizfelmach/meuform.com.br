@@ -1,6 +1,7 @@
 import { authenticated } from "@/action/auth";
+import { ensureSubscribed } from "@/action/middlewares";
 import { reqSession } from "@/action/session";
-import { subscribed } from "@/action/stripe";
+import { getSubscriptionStatus, subscribed } from "@/action/stripe";
 import { prisma } from "@/lib/prisma";
 import { LoaderFunctionArgs, json } from "@remix-run/node";
 
@@ -9,10 +10,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   await authenticated(request);
 
   const id = session.get("id");
+  const url = new URL(request.url);
+  if (url.searchParams.get("payment")) return json({});
 
-  const customer = await prisma.customer.findFirst({ where: { id } });
-
-  await subscribed(customer?.paymentId as string);
+  await ensureSubscribed(id as string);
 
   return json({});
 }
