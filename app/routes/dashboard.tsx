@@ -2,6 +2,8 @@ import { jsonSession } from "@/action";
 import { ensureAuthenticated, ensureSubscribed } from "@/action/middlewares";
 import { getFlash } from "@/action/session";
 import { useFlash } from "@/components/hook/flash";
+import { DashboardLayout } from "@/components/interface/dashboard-layout";
+import { NavbarDashboard } from "@/components/interface/navbar-dashboard";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 
@@ -20,8 +22,17 @@ export default function Page() {
   const flash = useLoaderData<typeof loader>();
   useFlash(flash);
   return (
-    <div className="h-screen w-screen flex items-center justify-center">
-      <h1>Dashboard...</h1>
+    <div>
+      <NavbarDashboard />
+      <DashboardLayout.Root>
+        <DashboardLayout.Header>
+          <DashboardLayout.Title>Formulários</DashboardLayout.Title>
+          <DashboardLayout.Description>
+            Gerencie e visualize seus formulários.
+          </DashboardLayout.Description>
+        </DashboardLayout.Header>
+        <DashboardLayout.Content>CONTENT</DashboardLayout.Content>
+      </DashboardLayout.Root>
     </div>
   );
 }
