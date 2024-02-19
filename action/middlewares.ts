@@ -55,12 +55,15 @@ export async function ensureNotSubscribed(
 export async function ensureAuthenticated(request: Request) {
   const session = await getSession(request.headers.get("Cookie"));
   const id = session.get("id");
+  const name = session.get("name")!;
+  const email = session.get("email")!;
+  const paymentId = session.get("paymentId")!;
 
   if (!id) {
     throw await NotAuthenticatedRequest(session);
   }
 
-  return { session, id };
+  return { session, id, name, email, paymentId };
 }
 
 export async function ensureNotAuthenticated(request: Request) {

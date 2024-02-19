@@ -2,7 +2,6 @@ import * as yup from "yup";
 import { AuthLayout } from "@/components/interface/auth-layout";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { getSession } from "@/lib/session";
 import * as crypto from "node:crypto";
 import { Forgot } from "@/components/template/forgot";
 import { resend } from "@/lib/resend";
@@ -11,19 +10,11 @@ import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
   MetaFunction,
-  json,
-  redirect,
 } from "@remix-run/node";
 import { prisma } from "@/lib/prisma";
 import { useFlash } from "@/components/hook/flash";
 import { hash } from "@/lib/crypt";
-import {
-  flashError,
-  flashSuccess,
-  getFlash,
-  headerSession,
-  reqSession,
-} from "@/action/session";
+import { flashSuccess, getFlash } from "@/action/session";
 import { ensureBody, ensureNotAuthenticated } from "@/action/middlewares";
 import { EmailDoesNotExistsRequest } from "@/action/errors";
 import { jsonSession, redirectSession } from "@/action";

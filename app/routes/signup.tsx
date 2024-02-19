@@ -12,7 +12,7 @@ import {
 } from "@remix-run/node";
 import { stripe } from "@/lib/stripe";
 import { useFlash } from "@/components/hook/flash";
-import { getFlash } from "@/action/session";
+import { getFlash, singInSession } from "@/action/session";
 import { ensureBody, ensureNotAuthenticated } from "@/action/middlewares";
 import { EmailAlreadyInUseRequest } from "@/action/errors";
 import { jsonSession, redirectSession } from "@/action";
@@ -150,6 +150,11 @@ export async function action({ request }: ActionFunctionArgs) {
     },
   });
 
-  session.set("id", customer.id);
+  singInSession(session, {
+    id: customer.id,
+    email: customer.email,
+    name: customer.name,
+    paymentId: customer.paymentId,
+  });
   return await redirectSession("/dashboard", session);
 }

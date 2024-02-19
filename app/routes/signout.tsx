@@ -7,5 +7,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await ensureAuthenticated(request);
   destroySession(session);
   session.unset("id");
+  session.unset("name");
+  session.unset("email");
+  session.unset("paymentId");
   return await redirectSession("/signin", session);
 }

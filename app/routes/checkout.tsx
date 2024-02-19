@@ -2,7 +2,6 @@ import { env } from "@/lib/env";
 import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { loadStripe } from "@stripe/stripe-js";
-import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { ensureAuthenticated, ensureNotSubscribed } from "@/action/middlewares";
 import {
@@ -26,7 +25,7 @@ export default function Page() {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const { id } = await ensureAuthenticated(request);
+  const { id, paymentId } = await ensureAuthenticated(request);
   await ensureNotSubscribed(id);
 
   const url = new URL(request.url);
@@ -35,7 +34,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   let product = env.STRIPE_PRICE_MONTHLY;
   if (plan === "yearly") product = env.STRIPE_PRICE_YEARLY;
 
-  const customer = await prisma.customer.findFirst({ where: { id } });
   const returnUrl = new URL(
     "/payment?checkout_session={CHECKOUT_SESSION_ID}",
     request.url
@@ -44,7 +42,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const checkoutSession = await stripe.checkout.sessions.create({
     ui_mode: "embedded",
     line_items: [{ price: product, quantity: 1 }],
-    customer: customer?.paymentId,
+    customer: paymentId,
     mode: "subscription",
     return_url: returnUrl.href,
     allow_promotion_codes: true,

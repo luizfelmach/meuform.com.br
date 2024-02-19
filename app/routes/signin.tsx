@@ -11,7 +11,7 @@ import {
   MetaFunction,
 } from "@remix-run/node";
 import { useFlash } from "@/components/hook/flash";
-import { getFlash, headerSession } from "@/action/session";
+import { getFlash, singInSession } from "@/action/session";
 import { ensureBody, ensureNotAuthenticated } from "@/action/middlewares";
 import { IncorrectCredentialsRequest } from "@/action/errors";
 import { jsonSession, redirectSession } from "@/action";
@@ -130,7 +130,12 @@ export async function action({ request }: ActionFunctionArgs) {
     throw await IncorrectCredentialsRequest(session);
   }
 
-  session.set("id", customer.id);
+  singInSession(session, {
+    id: customer.id,
+    email: customer.email,
+    name: customer.name,
+    paymentId: customer.paymentId,
+  });
   const flashUrl = session.get("redirect");
   const redirectUrl = flashUrl ?? "/dashboard";
 

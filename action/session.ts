@@ -1,7 +1,11 @@
-import { SessionType, commitSession, getSession } from "@/lib/session";
+import { SessionData, SessionType } from "@/lib/session";
 
-export async function reqSession(request: Request) {
-  return await getSession(request.headers.get("Cookie"));
+export function singInSession(session: SessionType, data: SessionData) {
+  const { id, email, name, paymentId } = data;
+  session.set("id", id);
+  session.set("email", email);
+  session.set("name", name);
+  session.set("paymentId", paymentId);
 }
 
 export function flashError(session: SessionType, message: string) {
@@ -36,10 +40,4 @@ export function getFlash(session: SessionType) {
     payment: session.get("payment"),
   };
   return data;
-}
-
-export async function headerSession(session: SessionType) {
-  return {
-    headers: { "Set-Cookie": await commitSession(session) },
-  };
 }

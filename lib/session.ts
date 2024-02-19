@@ -3,6 +3,9 @@ import { env } from "./env";
 
 export type SessionData = {
   id: string;
+  email: string;
+  name: string;
+  paymentId: string;
 };
 
 export type SessionFlashData = {
