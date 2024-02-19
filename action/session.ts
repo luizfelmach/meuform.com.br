@@ -1,7 +1,4 @@
-import { SessionFlashData, commitSession, getSession } from "@/lib/session";
-import { Session, SessionData, json, redirect } from "@remix-run/node";
-
-type SessionType = Session<SessionData, SessionFlashData>;
+import { SessionType, commitSession, getSession } from "@/lib/session";
 
 export async function reqSession(request: Request) {
   return await getSession(request.headers.get("Cookie"));

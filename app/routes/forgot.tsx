@@ -24,7 +24,9 @@ import {
   headerSession,
   reqSession,
 } from "@/action/session";
-import { unauthenticated } from "@/action/auth";
+import { ensureBody, ensureNotAuthenticated } from "@/action/middlewares";
+import { EmailDoesNotExistsRequest } from "@/action/errors";
+import { jsonSession, redirectSession } from "@/action";
 
 export default function Page() {
   const flash = useLoaderData<typeof loader>();
@@ -100,28 +102,19 @@ const forgotSchema = yup.object({
 type forgotType = yup.InferType<typeof forgotSchema>;
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await unauthenticated(request);
-
-  const session = await reqSession(request);
+  const { session } = await ensureNotAuthenticated(request);
   const flash = getFlash(session);
-
-  return json(flash, { ...(await headerSession(session)) });
+  return await jsonSession(flash, session);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  await unauthenticated(request);
-  const body = Object.fromEntries(await request.formData());
-  const { email } = await forgotSchema.validate(body);
+  const { email } = await ensureBody(forgotSchema, request);
+  const { session } = await ensureNotAuthenticated(request);
 
-  const session = await getSession(request.headers.get("Cookie"));
-
-  const customer = await prisma.customer.findFirst({
-    where: { email },
-  });
+  const customer = await prisma.customer.findFirst({ where: { email } });
 
   if (!customer) {
-    flashError(session, "Não foi possível encontrar seu e-mail.");
-    return redirect("/forgot", { ...(await headerSession(session)) });
+    throw await EmailDoesNotExistsRequest(session);
   }
 
   let alreadyExistsToken = await prisma.passResetToken.findFirst({
@@ -155,5 +148,5 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   flashSuccess(session, "Enviamos um link para você redefinir sua senha.");
-  return redirect("/forgot", { ...(await headerSession(session)) });
+  return await redirectSession("/forgot", session);
 }

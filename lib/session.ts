@@ -1,4 +1,4 @@
-import { createCookieSessionStorage } from "@remix-run/node";
+import { Session, createCookieSessionStorage } from "@remix-run/node";
 import { env } from "./env";
 
 export type SessionData = {
@@ -11,6 +11,8 @@ export type SessionFlashData = {
   payment?: { message: string; id: number };
   redirect?: string;
 };
+
+export type SessionType = Session<SessionData, SessionFlashData>;
 
 export const { getSession, commitSession, destroySession } =
   createCookieSessionStorage<SessionData, SessionFlashData>({

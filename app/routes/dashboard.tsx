@@ -1,18 +1,12 @@
-import { authenticated } from "@/action/auth";
-import { ensureSubscribed } from "@/action/middlewares";
-import { getFlash, reqSession } from "@/action/session";
-import { getSubscriptionStatus, subscribed } from "@/action/stripe";
+import { ensureAuthenticated, ensureSubscribed } from "@/action/middlewares";
+import { getFlash } from "@/action/session";
 import { useFlash } from "@/components/hook/flash";
-import { prisma } from "@/lib/prisma";
 import { commitSession } from "@/lib/session";
 import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await reqSession(request);
-  await authenticated(request);
-
-  const id = session.get("id");
+  const { session, id } = await ensureAuthenticated(request);
   const url = new URL(request.url);
 
   const flash = getFlash(session);

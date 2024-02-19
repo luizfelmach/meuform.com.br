@@ -9,18 +9,13 @@ import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
   MetaFunction,
-  json,
-  redirect,
 } from "@remix-run/node";
 import { stripe } from "@/lib/stripe";
 import { useFlash } from "@/components/hook/flash";
-import {
-  flashError,
-  getFlash,
-  headerSession,
-  reqSession,
-} from "@/action/session";
-import { unauthenticated } from "@/action/auth";
+import { getFlash } from "@/action/session";
+import { ensureBody, ensureNotAuthenticated } from "@/action/middlewares";
+import { EmailAlreadyInUseRequest } from "@/action/errors";
+import { jsonSession, redirectSession } from "@/action";
 
 export default function Page() {
   const flash = useLoaderData<typeof loader>();
@@ -120,30 +115,22 @@ export const signUpSchema = yup.object({
 type signUpType = yup.InferType<typeof signUpSchema>;
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await reqSession(request);
-
-  await unauthenticated(request);
+  const { session } = await ensureNotAuthenticated(request);
   const flash = getFlash(session);
-
-  return json(flash, { ...(await headerSession(session)) });
+  return await jsonSession(flash, session);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  await unauthenticated(request);
-  const body = Object.fromEntries(await request.formData());
-  const { name, email, password } = await signUpSchema.validate(body);
-
-  const session = await reqSession(request);
+  const { name, email, password } = await ensureBody(signUpSchema, request);
+  const { session } = await ensureNotAuthenticated(request);
 
   const exists = await prisma.customer.findFirst({ where: { email } });
 
   if (exists) {
-    flashError(session, "Alguém já está usando esse e-mail.");
-    return redirect("/signup", { ...(await headerSession(session)) });
+    throw await EmailAlreadyInUseRequest(session);
   }
 
   const hashPassword = hash(password);
-
   const stripeCustomer = await stripe.customers.create({ name, email });
 
   const customer = await prisma.customer.create({
@@ -156,5 +143,5 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   session.set("id", customer.id);
-  return redirect("/dashboard", { ...(await headerSession(session)) });
+  return await redirectSession("/dashboard", session);
 }

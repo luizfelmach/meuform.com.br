@@ -7,20 +7,14 @@ import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
   MetaFunction,
-  json,
-  redirect,
 } from "@remix-run/node";
 import { prisma } from "@/lib/prisma";
 import { useFlash } from "@/components/hook/flash";
 import { compare, hash } from "@/lib/crypt";
-import {
-  flashError,
-  flashSuccess,
-  getFlash,
-  headerSession,
-  reqSession,
-} from "@/action/session";
-import { unauthenticated } from "@/action/auth";
+import { flashSuccess, getFlash } from "@/action/session";
+import { ensureBody, ensureNotAuthenticated } from "@/action/middlewares";
+import { jsonSession, redirectSession } from "@/action";
+import { InvalidOrExpiredRequest } from "@/action/errors";
 
 export default function Page() {
   const submit = useSubmit();
@@ -130,17 +124,14 @@ async function validToken(token: string | null, id: string | null) {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await reqSession(request);
-
-  await unauthenticated(request);
+  const { session } = await ensureNotAuthenticated(request);
 
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
   const token = url.searchParams.get("token");
 
   if (!(await validToken(token, id))) {
-    flashError(session, "Solicitação inválida ou expirada.");
-    return redirect("/forgot", { ...(await headerSession(session)) });
+    throw await InvalidOrExpiredRequest(session);
   }
 
   const flash = getFlash(session);
@@ -151,20 +142,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     token: token as string,
   };
 
-  return json(data, { ...(await headerSession(session)) });
+  return jsonSession(data, session);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  await unauthenticated(request);
-
-  const body = Object.fromEntries(await request.formData());
-  const { id, password, token } = await resetPasswordSchema.validate(body);
-
-  const session = await reqSession(request);
+  const body = await ensureBody(resetPasswordSchema, request);
+  const { id, password, token } = body;
+  const { session } = await ensureNotAuthenticated(request);
 
   if (!(await validToken(token, id))) {
-    flashError(session, "Solicitação inválida ou expirada.");
-    return redirect("/forgot", { ...(await headerSession(session)) });
+    throw await InvalidOrExpiredRequest(session);
   }
 
   const hashPassword = hash(password);
@@ -174,5 +161,5 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   flashSuccess(session, "Senha atualizada. Acesse a plataforma.");
-  return redirect("/signin", { ...(await headerSession(session)) });
+  return await redirectSession("/signin", session);
 }

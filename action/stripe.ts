@@ -1,9 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { redirect } from "@remix-run/node";
 import Stripe from "stripe";
 
 export type subscriptionStatus = Stripe.Subscription.Status | null;
+export type subscribedStatus = "active" | "trialing";
+export type notSubscribedStatus =
+  | null
+  | "canceled"
+  | "incomplete"
+  | "incomplete_expired"
+  | "past_due"
+  | "paused"
+  | "unpaid";
 
 export async function getSubscriptionStatus(
   id: string
@@ -17,24 +25,4 @@ export async function getSubscriptionStatus(
     customer.subscriptionId
   );
   return subscription.status;
-}
-
-export async function subscribed(id: string) {
-  const subscriptionStatus = await getSubscriptionStatus(id);
-
-  const redirectStatus = [
-    null,
-    "canceled",
-    "incomplete",
-    "incomplete_expired",
-    "past_due",
-    "paused",
-    "unpaid",
-  ];
-
-  const isRedirect = redirectStatus.includes(subscriptionStatus);
-
-  if (isRedirect) {
-    throw redirect("/checkout");
-  }
 }

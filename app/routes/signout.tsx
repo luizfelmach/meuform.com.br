@@ -1,14 +1,11 @@
-import { authenticated } from "@/action/auth";
-import { headerSession, reqSession } from "@/action/session";
+import { redirectSession } from "@/action";
+import { ensureAuthenticated } from "@/action/middlewares";
 import { destroySession } from "@/lib/session";
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { LoaderFunctionArgs } from "@remix-run/node";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await reqSession(request);
-
-  await authenticated(request);
+  const { session } = await ensureAuthenticated(request);
   destroySession(session);
   session.unset("id");
-
-  return redirect("/signin", { ...(await headerSession(session)) });
+  return await redirectSession("/signin", session);
 }

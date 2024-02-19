@@ -9,18 +9,12 @@ import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
   MetaFunction,
-  json,
-  redirect,
 } from "@remix-run/node";
 import { useFlash } from "@/components/hook/flash";
-import { unauthenticated } from "@/action/auth";
-import {
-  flashError,
-  getFlash,
-  headerSession,
-  reqSession,
-} from "@/action/session";
+import { getFlash, headerSession } from "@/action/session";
 import { ensureBody, ensureNotAuthenticated } from "@/action/middlewares";
+import { IncorrectCredentialsRequest } from "@/action/errors";
+import { jsonSession, redirectSession } from "@/action";
 
 export default function Page() {
   const submit = useSubmit();
@@ -109,12 +103,9 @@ const signInSchema = yup.object({
 type signInType = yup.InferType<typeof signInSchema>;
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await reqSession(request);
-
-  await unauthenticated(request);
+  const { session } = await ensureNotAuthenticated(request);
   const flash = getFlash(session);
-
-  return json(flash, { ...(await headerSession(session)) });
+  return await jsonSession(flash, session);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -124,19 +115,17 @@ export async function action({ request }: ActionFunctionArgs) {
   const customer = await prisma.customer.findFirst({ where: { email } });
 
   if (!customer) {
-    flashError(session, "Credenciais informadas estão incorretas.");
-    return redirect("/signin", { ...(await headerSession(session)) });
+    throw await IncorrectCredentialsRequest(session);
   }
 
   const passwordValid = compare(password, customer.password);
   if (!passwordValid) {
-    flashError(session, "Credenciais informadas estão incorretas.");
-    return redirect("/signin", { ...(await headerSession(session)) });
+    throw await IncorrectCredentialsRequest(session);
   }
 
   session.set("id", customer.id);
-  const flash = session.get("redirect");
-  const redirectUrl = flash ?? "/dashboard";
+  const flashUrl = session.get("redirect");
+  const redirectUrl = flashUrl ?? "/dashboard";
 
-  return redirect(redirectUrl, { ...(await headerSession(session)) });
+  return await redirectSession(redirectUrl, session);
 }
