@@ -1,4 +1,5 @@
-import { redirect } from "@remix-run/node";
+import * as yup from "yup";
+import { json, redirect } from "@remix-run/node";
 import { getSubscriptionStatus } from "./stripe";
 import { commitSession, getSession } from "@/lib/session";
 import { flashError, flashRedirect } from "./session";
@@ -62,4 +63,25 @@ export async function ensureNotAuthenticated(request: Request) {
   if (!!id) throw redirect("/dashboard");
 
   return { session };
+}
+
+export async function ensureBody<T = any>(
+  schema: yup.AnySchema<T>,
+  request: Request
+): Promise<T> {
+  try {
+    const bodyData = Object.fromEntries(await request.formData());
+    const body = await schema.validate(bodyData);
+    return body;
+  } catch (e: unknown) {
+    if (e instanceof yup.ValidationError)
+      throw json(null, {
+        status: 400,
+        statusText: e.message,
+      });
+    throw json(null, {
+      status: 400,
+      statusText: "Unknown error",
+    });
+  }
 }

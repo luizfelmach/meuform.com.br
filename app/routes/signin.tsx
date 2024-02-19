@@ -20,6 +20,7 @@ import {
   headerSession,
   reqSession,
 } from "@/action/session";
+import { ensureBody, ensureNotAuthenticated } from "@/action/middlewares";
 
 export default function Page() {
   const submit = useSubmit();
@@ -117,10 +118,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  await unauthenticated(request);
-  const body = Object.fromEntries(await request.formData());
-  const { email, password } = await signInSchema.validate(body);
-  const session = await reqSession(request);
+  const { email, password } = await ensureBody(signInSchema, request);
+  const { session } = await ensureNotAuthenticated(request);
 
   const customer = await prisma.customer.findFirst({ where: { email } });
 
