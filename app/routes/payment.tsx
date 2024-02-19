@@ -18,5 +18,5 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (checkoutSession.payment_status !== "paid") return redirect("/dashboard");
   flashPayment(session, "Pagamento efetuado com sucesso.");
 
-  return await redirectSession("/dashboard?payment=success", session);
+  return await redirectSession("/dashboard", session);
 }

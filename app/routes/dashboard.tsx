@@ -9,11 +9,11 @@ import { useLoaderData } from "@remix-run/react";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session, id } = await ensureAuthenticated(request);
-  const url = new URL(request.url);
 
   const flash = getFlash(session);
-  if (url.searchParams.get("payment")) return await jsonSession(flash, session);
-  await ensureSubscribed(id as string);
+  if (!flash.payment) {
+    await ensureSubscribed(id);
+  }
 
   return await jsonSession(flash, session);
 }
