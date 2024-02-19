@@ -9,6 +9,7 @@ export type SessionFlashData = {
   error?: { message: string; id: number };
   success?: { message: string; id: number };
   payment?: { message: string; id: number };
+  redirect?: string;
 };
 
 export const { getSession, commitSession, destroySession } =

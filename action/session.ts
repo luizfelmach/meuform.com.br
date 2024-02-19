@@ -28,6 +28,10 @@ export function flashPayment(session: SessionType, message: string) {
   });
 }
 
+export function flashRedirect(session: SessionType, url: string) {
+  session.flash("redirect", url);
+}
+
 export function getFlash(session: SessionType) {
   const data = {
     error: session.get("error"),

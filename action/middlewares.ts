@@ -1,7 +1,7 @@
 import { redirect } from "@remix-run/node";
 import { getSubscriptionStatus } from "./stripe";
 import { commitSession, getSession } from "@/lib/session";
-import { flashError } from "./session";
+import { flashError, flashRedirect } from "./session";
 
 export async function ensureSubscribed(id: string) {
   const subscriptionStatus = await getSubscriptionStatus(id);
@@ -45,6 +45,7 @@ export async function ensureAuthenticated(request: Request) {
 
   if (!id) {
     flashError(session, "Você precisa se autenticar primeiro.");
+    flashRedirect(session, request.url);
 
     throw redirect("/signin", {
       headers: { "Set-Cookie": await commitSession(session) },

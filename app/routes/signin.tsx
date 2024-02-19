@@ -136,6 +136,8 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   session.set("id", customer.id);
+  const flash = session.get("redirect");
+  const redirectUrl = flash ?? "/dashboard";
 
-  return redirect("/dashboard", { ...(await headerSession(session)) });
+  return redirect(redirectUrl, { ...(await headerSession(session)) });
 }
