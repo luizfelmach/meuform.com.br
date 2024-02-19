@@ -96,7 +96,14 @@ export const meta: MetaFunction = () => {
 };
 
 const forgotSchema = yup.object({
-  email: yup.string().email("E-mail inválido.").required("Digite seu e-mail."),
+  email: yup
+    .string()
+    .email("E-mail inválido.")
+    .required("Digite seu e-mail.")
+    .transform((value) => {
+      if (typeof value === "string") return value.toLowerCase();
+      return value;
+    }),
 });
 
 type forgotType = yup.InferType<typeof forgotSchema>;
@@ -108,7 +115,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { email } = await ensureBody(forgotSchema, request);
+  const { email } = await ensureBody<forgotType>(forgotSchema, request);
   const { session } = await ensureNotAuthenticated(request);
 
   const customer = await prisma.customer.findFirst({ where: { email } });

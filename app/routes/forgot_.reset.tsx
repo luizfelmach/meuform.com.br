@@ -146,7 +146,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const body = await ensureBody(resetPasswordSchema, request);
+  const body = await ensureBody<resetPasswordType>(
+    resetPasswordSchema,
+    request
+  );
   const { id, password, token } = body;
   const { session } = await ensureNotAuthenticated(request);
 

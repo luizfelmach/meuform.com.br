@@ -97,7 +97,13 @@ export const meta: MetaFunction = () => {
 
 const signInSchema = yup.object({
   email: yup.string().email("E-mail inválido.").required("Digite seu e-mail."),
-  password: yup.string().required("Digite sua senha."),
+  password: yup
+    .string()
+    .required("Digite sua senha.")
+    .transform((value) => {
+      if (typeof value === "string") return value.toLowerCase();
+      return value;
+    }),
 });
 
 type signInType = yup.InferType<typeof signInSchema>;
@@ -109,7 +115,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { email, password } = await ensureBody(signInSchema, request);
+  const body = await ensureBody<signInType>(signInSchema, request);
+  const { email, password } = body;
   const { session } = await ensureNotAuthenticated(request);
 
   const customer = await prisma.customer.findFirst({ where: { email } });
