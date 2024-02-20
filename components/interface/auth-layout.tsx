@@ -38,7 +38,7 @@ interface AuthLayoutMainProps {
 function AuthLayoutMain({ children }: AuthLayoutMainProps) {
   return (
     <div className="flex justify-center mx-4">
-      <aside className="h-[calc(100vh_-_1rem)] m-2 w-full max-w-md">
+      <aside className="h-[calc(100vh_-_1rem)] m-2 w-full max-w-md flex flex-col items-center justify-center">
         {children}
       </aside>
     </div>
@@ -64,7 +64,7 @@ function AuthLayoutBanner() {
 
 function AuthLayoutLogoFull() {
   return (
-    <div className="mt-24">
+    <div>
       <LogoFull size={150} />
     </div>
   );

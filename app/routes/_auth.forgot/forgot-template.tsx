@@ -1,9 +1,9 @@
-interface ForgotProps {
+interface ForgotTemplateProps {
   name: string;
   resetLink: string;
 }
 
-export function Forgot({ name, resetLink }: ForgotProps) {
+export function ForgotTemplate({ name, resetLink }: ForgotTemplateProps) {
   return (
     <div
       style={{
@@ -15,7 +15,7 @@ export function Forgot({ name, resetLink }: ForgotProps) {
       <h2 style={{ textAlign: "center", color: "#333" }}>
         Recuperação de Senha
       </h2>
-      <p>Olá {name},</p>
+      <p>Olá, {name}!</p>
       <p>
         Você solicitou uma redefinição de senha. Por favor, clique no link
         abaixo para criar uma nova senha:

@@ -15,9 +15,12 @@ export async function AuthenticatedRequest() {
   throw redirect("/dashboard");
 }
 
-export async function IncorrectCredentialsRequest(session: SessionType) {
+export async function IncorrectCredentialsRequest(
+  session: SessionType,
+  url: string
+) {
   flashError(session, "Credenciais informadas estão incorretas.");
-  return redirect("/signin", {
+  return redirect(url, {
     headers: { "Set-Cookie": await commitSession(session) },
   });
 }
