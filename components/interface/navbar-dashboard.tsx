@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useNavigate } from "@remix-run/react";
 
 export function NavbarDashboard() {
   return (
@@ -27,6 +28,7 @@ export function NavbarDashboard() {
 }
 
 function NavbarDashboardActionsDropdown() {
+  const navigate = useNavigate();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -38,12 +40,12 @@ function NavbarDashboardActionsDropdown() {
           <User className="mr-2 h-4 w-4" />
           <span>Perfil</span>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/billing")}>
           <CreditCard className="mr-2 h-4 w-4 text-success" />
           <span>Pagamento</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => {}}>
+        <DropdownMenuItem onClick={() => navigate("/signout")}>
           <LogOut className="mr-2 h-4 w-4 text-destructive" />
           <span>Sair</span>
         </DropdownMenuItem>

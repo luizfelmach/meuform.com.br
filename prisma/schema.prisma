@@ -32,4 +32,6 @@ model Form {
   answers    Json[]
   Customer   Customer? @relation(fields: [customerId], references: [id])
   customerId String?   @db.ObjectId
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
