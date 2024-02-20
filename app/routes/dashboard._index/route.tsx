@@ -65,9 +65,9 @@ export default function Page() {
 
       <Separator className="mb-10" />
 
-      <ContainerDashboard>
+      <div className="max-w-5xl mx-auto px-4">
         <DashboardForms forms={response as any} />
-      </ContainerDashboard>
+      </div>
     </div>
   );
 }
@@ -89,7 +89,7 @@ export function DashboardForms({ forms }: DashboardFormsProps) {
 function FormCard({ form }: { form: DashboardFormType }) {
   const navigate = useNavigate();
   return (
-    <div className="min-h-20 bg-background border border-accent rounded-xl p-4 flex justify-between items-center">
+    <div className="min-h-20 bg-accent border border-accent rounded-xl p-4 flex justify-between items-center">
       <section className="flex-1 flex flex-col">
         <p className="text-foreground font-semibold">{form.name}</p>
         <p className="text-accent-foreground mt-4 text-sm">
