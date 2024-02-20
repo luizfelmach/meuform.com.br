@@ -36,7 +36,7 @@ export function Logo({ size = 70, href, ...props }: LogoProps) {
       alt="Meu Form Logo"
       width={size}
       height={size}
-      src={"/logo-brand.svg"}
+      src={"/logo.svg"}
       className="cursor-pointer"
       onClick={() => href && navigate(href)}
     />

@@ -1,7 +1,8 @@
+import { useNavigate } from "@remix-run/react";
 import { CreditCard, LogOut, User } from "lucide-react";
 import { Navbar, NavbarItem } from "@/components/interface/navbar";
-import { Container } from "@/components/interface/container";
-import { LogoFull } from "./logo";
+import { Logo } from "@/components/interface/logo";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,19 +11,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useNavigate } from "@remix-run/react";
 
 export function NavbarDashboard() {
   return (
-    <Navbar>
-      <Container className="flex justify-between max-w-7xl p-0">
-        <NavbarItem>
-          <LogoFull href="/" />
-        </NavbarItem>
-        <NavbarItem>
-          <NavbarDashboardActionsDropdown />
-        </NavbarItem>
-      </Container>
+    <Navbar className="flex justify-between shadow-none">
+      <NavbarItem className="gap-2">
+        <Logo size={35} href="/dashboard" />
+        <p className="font-black text-sm line-clamp-1">
+          {"Luiz Felipe Machado"}
+        </p>
+      </NavbarItem>
+      <NavbarItem>
+        <NavbarDashboardActionsDropdown />
+      </NavbarItem>
     </Navbar>
   );
 }
@@ -34,7 +35,7 @@ function NavbarDashboardActionsDropdown() {
       <DropdownMenuTrigger>
         <NavbarActionsAvatar />
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-background mr-4">
+      <DropdownMenuContent className="bg-background mr-4 w-52 h-30">
         <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
         <DropdownMenuItem>
           <User className="mr-2 h-4 w-4" />

@@ -3,17 +3,31 @@ import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { loadStripe } from "@stripe/stripe-js";
 import { stripe } from "@/lib/stripe";
-import { ensureAuthenticated, ensureNotSubscribed } from "@/action/middlewares";
+import { ensureAuthenticated } from "@/action/middlewares";
 import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
+import { ContainerDashboard } from "../dashboard/container";
+import { HeaderDashboard } from "../dashboard/header";
+import { Separator } from "@/components/ui/separator";
 
 export default function Page() {
   const { clientSecret, stripePublicKey } = useLoaderData<typeof loader>();
   const stripePromise = loadStripe(stripePublicKey);
   return (
-    <div className="mt-4">
+    <div>
+      <HeaderDashboard.Root className="max-w-5xl mx-auto px-4">
+        <HeaderDashboard.Content>
+          <HeaderDashboard.Title>Assinatura</HeaderDashboard.Title>
+          <HeaderDashboard.Description>
+            Gerencie sua assinatura no site.
+          </HeaderDashboard.Description>
+        </HeaderDashboard.Content>
+      </HeaderDashboard.Root>
+
+      <Separator className="mb-10" />
+
       <EmbeddedCheckoutProvider
         stripe={stripePromise}
         options={{ clientSecret }}
@@ -25,8 +39,7 @@ export default function Page() {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const { id, paymentId } = await ensureAuthenticated(request);
-  await ensureNotSubscribed(id);
+  const { paymentId } = await ensureAuthenticated(request);
 
   const url = new URL(request.url);
   const plan = url.searchParams.get("plan");
