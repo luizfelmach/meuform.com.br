@@ -37,11 +37,11 @@ function NavbarDashboardActionsDropdown() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-background mr-4 w-52 h-30">
         <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/dashboard/profile")}>
           <User className="mr-2 h-4 w-4" />
           <span>Perfil</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/billing")}>
+        <DropdownMenuItem onClick={() => navigate("/dashboard/payment")}>
           <CreditCard className="mr-2 h-4 w-4 text-success" />
           <span>Pagamento</span>
         </DropdownMenuItem>
