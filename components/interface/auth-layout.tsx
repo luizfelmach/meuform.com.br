@@ -38,7 +38,7 @@ interface AuthLayoutMainProps {
 function AuthLayoutMain({ children }: AuthLayoutMainProps) {
   return (
     <div className="flex justify-center mx-4">
-      <aside className="h-[calc(100vh_-_1rem)] m-2 w-full max-w-md flex flex-col items-center justify-center">
+      <aside className="min-h-[calc(100vh_-_1rem)] m-2 w-full max-w-md flex flex-col items-center justify-center">
         {children}
       </aside>
     </div>
@@ -47,7 +47,7 @@ function AuthLayoutMain({ children }: AuthLayoutMainProps) {
 
 function AuthLayoutBanner() {
   return (
-    <div className="flex flex-col items-center h-full justify-center">
+    <div className="flex flex-col items-center min-h-full justify-center">
       <Header.Root className="m-16 text-primary-foreground">
         <Header.Title>Crie formulários para conhecer seu público!</Header.Title>
       </Header.Root>
