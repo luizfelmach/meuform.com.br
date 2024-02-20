@@ -9,7 +9,7 @@ function Root({ children, className }: RootProps) {
   return (
     <header
       className={cn(
-        "sm:flex justify-between items-center my-10 space-y-4",
+        "sm:flex justify-between items-center my-10 space-y-4 max-w-5xl px-4",
         className
       )}
     >

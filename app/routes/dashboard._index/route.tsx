@@ -9,6 +9,8 @@ import { Eye, Pencil, Plus, Share } from "lucide-react";
 import { HeaderDashboard } from "../dashboard/header";
 import { ContainerDashboard } from "../dashboard/container";
 import { Separator } from "@/components/ui/separator";
+import { getFlash } from "@/action/session";
+import { useFlash } from "@/components/hook/flash";
 
 type DashboardFormType = {
   id: string;
@@ -36,115 +38,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
     };
   });
 
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
+  const flash = getFlash(session);
 
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  response.push({
-    answersCount: 120,
-    createdAt: new Date(),
-    id: "kjsdlfj",
-    name: "lksjdflksdjf",
-    screensCount: 123,
-  });
-
-  return await jsonSession({ response }, session);
+  return await jsonSession({ response, flash }, session);
 }
 
 export default function Page() {
-  const { response } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const { response, flash } = useLoaderData<typeof loader>();
+  useFlash(flash);
   return (
     <div>
       <HeaderDashboard.Root className="max-w-5xl mx-auto px-4">
@@ -155,7 +57,7 @@ export default function Page() {
           </HeaderDashboard.Description>
         </HeaderDashboard.Content>
         <HeaderDashboard.Action>
-          <Button className="w-full">
+          <Button className="w-full" onClick={() => navigate("/dashboard/new")}>
             Criar novo formulário <Plus className="size-5 ml-2" />
           </Button>
         </HeaderDashboard.Action>
