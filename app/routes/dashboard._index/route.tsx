@@ -54,10 +54,10 @@ function FormCard({ form }: { form: LoaderResponse }) {
         <CardDescription>Respostas: {form.answersCount}</CardDescription>
       </CardHeader>
       <CardFooter className="flex justify-end gap-1">
-        <Button type="button" variant={"ghost"} size={"icon"}>
+        <Button type="button" variant={"ghost"} size={"icon"} disabled>
           <Eye className="size-5" />
         </Button>
-        <CopyButton link={"lkjsdkfj"}>
+        <CopyButton link={form.link}>
           <Forward className="size-5" />
         </CopyButton>
         <Button
@@ -74,6 +74,7 @@ function FormCard({ form }: { form: LoaderResponse }) {
 type LoaderResponse = {
   id: string;
   name: string;
+  link: string;
   answersCount: number;
   screensCount: number;
   createdAt: Date;
@@ -92,6 +93,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       id: form.id,
       name: form.name,
       answersCount: form.answers.length,
+      link: new URL(`re/${form.id}`, request.url).href,
       screensCount: form.screens.length + 1,
       createdAt: form.createdAt,
     };
