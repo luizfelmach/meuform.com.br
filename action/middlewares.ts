@@ -11,6 +11,7 @@ import {
   BadRequest,
   NotAuthenticatedRequest,
 } from "./errors";
+import { flashError } from "./session";
 
 export async function ensureSubscribed(id: string): Promise<subscribedStatus> {
   const subscriptionStatus = await getSubscriptionStatus(id);
@@ -27,8 +28,25 @@ export async function ensureSubscribed(id: string): Promise<subscribedStatus> {
 
   const mustRedirect = redirectStatus.includes(subscriptionStatus);
 
+  let message: string = "";
+
+  if (subscriptionStatus === null)
+    message = "Você ainda não possui nenhuma assinatura.";
+
+  if (subscriptionStatus === "canceled")
+    message = "Sua assinatura foi cancelada.";
+
+  if (subscriptionStatus === "incomplete")
+    message = "Você ainda não concluiu o pagamento.";
+
+  if (subscriptionStatus === "past_due")
+    message = "Você não efetuou o pagamento esse mês. Gerencie sua assinatura.";
+
+  if (subscriptionStatus === "unpaid")
+    message = "Você ainda não efetuou o pagamento.";
+
   if (mustRedirect) {
-    throw redirect("/checkout");
+    throw redirect("/dashboard/payment");
   }
 
   return subscriptionStatus as subscribedStatus;
