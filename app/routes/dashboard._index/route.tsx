@@ -5,11 +5,26 @@ import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import { Eye, Pencil, Plus, Share } from "lucide-react";
+import { Eye, Forward, MoreVertical, Pencil, Plus, Share } from "lucide-react";
 import { HeaderDashboard } from "../dashboard/header";
 import { Separator } from "@/components/ui/separator";
 import { getFlash } from "@/action/session";
 import { useFlash } from "@/components/hook/flash";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type DashboardFormType = {
   id: string;
@@ -62,9 +77,9 @@ export default function Page() {
         </HeaderDashboard.Action>
       </HeaderDashboard.Root>
 
-      <Separator className="mb-10" />
+      <Separator />
 
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="max-w-5xl mx-auto px-4 my-10">
         <DashboardForms forms={response as any} />
       </div>
     </div>
@@ -88,6 +103,31 @@ export function DashboardForms({ forms }: DashboardFormsProps) {
 function FormCard({ form }: { form: DashboardFormType }) {
   const navigate = useNavigate();
   return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{form.name}</CardTitle>
+        <CardDescription>Respostas: {form.answersCount}</CardDescription>
+      </CardHeader>
+      <CardFooter className="flex justify-end gap-1">
+        <Button type="button" variant={"ghost"} size={"icon"}>
+          <Eye className="size-5" />
+        </Button>
+        <CopyButton link={"lkjsdkfj"}>
+          <Forward className="size-5" />
+        </CopyButton>
+        <Button
+          className="bg-accent text-accent-foreground hover:bg-accent/50"
+          onClick={() => navigate(`/editor/${form.id}`)}
+        >
+          Editar
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+/*
+
     <div className="min-h-20 bg-accent border border-accent rounded-xl p-4 flex justify-between items-center">
       <section className="flex-1 flex flex-col">
         <p className="text-foreground font-semibold">{form.name}</p>
@@ -112,5 +152,5 @@ function FormCard({ form }: { form: DashboardFormType }) {
         </Button>
       </section>
     </div>
-  );
-}
+
+*/
