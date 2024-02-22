@@ -34,14 +34,16 @@ export default function Page() {
         </HeaderDashboard.Content>
       </HeaderDashboard.Root>
 
-      <Separator className="mb-10" />
+      <Separator />
 
-      <EmbeddedCheckoutProvider
-        stripe={stripePromise}
-        options={{ clientSecret }}
-      >
-        <EmbeddedCheckout />
-      </EmbeddedCheckoutProvider>
+      <div className="max-w-5xl mx-auto px-4 my-10">
+        <EmbeddedCheckoutProvider
+          stripe={stripePromise}
+          options={{ clientSecret }}
+        >
+          <EmbeddedCheckout />
+        </EmbeddedCheckoutProvider>
+      </div>
     </div>
   );
 }

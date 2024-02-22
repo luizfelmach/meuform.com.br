@@ -28,9 +28,9 @@ export default function Page() {
         </HeaderDashboard.Content>
       </HeaderDashboard.Root>
 
-      <Separator className="mb-10" />
+      <Separator />
 
-      <div className="max-w-5xl mx-auto px-4 space-y-4">
+      <div className="max-w-5xl mx-auto px-4 my-10 space-y-4">
         <Card>
           <CardHeader>
             <CardTitle>Nome de exibição</CardTitle>

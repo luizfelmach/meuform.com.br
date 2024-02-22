@@ -55,9 +55,9 @@ export default function Page() {
         </HeaderDashboard.Content>
       </HeaderDashboard.Root>
 
-      <Separator className="mb-10" />
+      <Separator />
 
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="max-w-5xl mx-auto px-4 my-10 space-y-4">
         <FormProvider {...methods}>
           <form
             onSubmit={methods.handleSubmit(handleSubmit)}
