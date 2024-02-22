@@ -19,7 +19,7 @@ function Header({ action, children }: HeaderProps) {
   return (
     <div>
       <div className="max-w-5xl mx-auto px-4 my-10 space-y-4 sm:flex justify-between items-center">
-        <div className="w-[1900px]">{children}</div>
+        <div>{children}</div>
         <div>{action}</div>
       </div>
       <Separator />

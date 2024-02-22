@@ -50,7 +50,7 @@ function FormCard({ form }: { form: LoaderResponse }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{form.name}</CardTitle>
+        <CardTitle className="line-clamp-4">{form.name}</CardTitle>
         <CardDescription>Respostas: {form.answersCount}</CardDescription>
       </CardHeader>
       <CardFooter className="flex justify-end gap-1">
