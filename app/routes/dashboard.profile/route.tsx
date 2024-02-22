@@ -1,5 +1,10 @@
-import { Separator } from "@/components/ui/separator";
-import { HeaderDashboard } from "../dashboard/header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { LoaderFunctionArgs, json } from "@remix-run/node";
+import { ensureAuthenticated } from "@/action/middlewares";
+import { useLoaderData } from "@remix-run/react";
+import { Container } from "../dashboard/container";
+
 import {
   Card,
   CardContent,
@@ -8,29 +13,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { LoaderFunctionArgs, json } from "@remix-run/node";
-import { ensureAuthenticated } from "@/action/middlewares";
-import { useLoaderData } from "@remix-run/react";
 
 export default function Page() {
   const { name } = useLoaderData<typeof loader>();
 
   return (
-    <div>
-      <HeaderDashboard.Root className="max-w-5xl mx-auto px-4">
-        <HeaderDashboard.Content>
-          <HeaderDashboard.Title>Perfil</HeaderDashboard.Title>
-          <HeaderDashboard.Description>
-            Gerencie sua conta.
-          </HeaderDashboard.Description>
-        </HeaderDashboard.Content>
-      </HeaderDashboard.Root>
-
-      <Separator />
-
-      <div className="max-w-5xl mx-auto px-4 my-10 space-y-4">
+    <Container.Root>
+      <Container.Header>
+        <Container.Title>Perfil</Container.Title>
+        <Container.Description>Gerencie sua conta.</Container.Description>
+      </Container.Header>
+      <Container.Content>
         <Card>
           <CardHeader>
             <CardTitle>Nome de exibição</CardTitle>
@@ -64,8 +57,8 @@ export default function Page() {
             </Button>
           </CardFooter>
         </Card>
-      </div>
-    </div>
+      </Container.Content>
+    </Container.Root>
   );
 }
 

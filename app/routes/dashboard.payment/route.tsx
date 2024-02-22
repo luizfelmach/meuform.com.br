@@ -1,50 +1,36 @@
 import { env } from "@/lib/env";
 import { LoaderFunctionArgs, json } from "@remix-run/node";
-import { useLoaderData, useSubmit } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { loadStripe } from "@stripe/stripe-js";
 import { stripe } from "@/lib/stripe";
 import { ensureAuthenticated } from "@/action/middlewares";
+import { Container } from "../dashboard/container";
+
 import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
-import { ContainerDashboard } from "../dashboard/container";
-import { HeaderDashboard } from "../dashboard/header";
-import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export default function Page() {
-  const submit = useSubmit();
   const { clientSecret, stripePublicKey } = useLoaderData<typeof loader>();
   const stripePromise = loadStripe(stripePublicKey);
   return (
-    <div>
-      <HeaderDashboard.Root className="max-w-5xl mx-auto px-4">
-        <HeaderDashboard.Content>
-          <HeaderDashboard.Title>Assinatura</HeaderDashboard.Title>
-          <HeaderDashboard.Description>
-            Gerencie sua assinatura no site.
-          </HeaderDashboard.Description>
-        </HeaderDashboard.Content>
-      </HeaderDashboard.Root>
-
-      <Separator />
-
-      <div className="max-w-5xl mx-auto px-4 my-10">
+    <Container.Root>
+      <Container.Header>
+        <Container.Title>Assinatura</Container.Title>
+        <Container.Description>
+          Gerencie sua assinatura no site.
+        </Container.Description>
+      </Container.Header>
+      <Container.Content>
         <EmbeddedCheckoutProvider
           stripe={stripePromise}
           options={{ clientSecret }}
         >
           <EmbeddedCheckout />
         </EmbeddedCheckoutProvider>
-      </div>
-    </div>
+      </Container.Content>
+    </Container.Root>
   );
 }
 
