@@ -40,6 +40,8 @@
     "canvas-confetti": "^1.9.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "cpf-cnpj-validator": "^1.0.3",
+    "framer-motion": "^11.0.5",
     "isbot": "^4.1.0",
     "lucide-react": "^0.331.0",
     "next-themes": "^0.2.1",
