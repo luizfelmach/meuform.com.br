@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "@remix-run/react";
 const menus = [
   { path: "/dashboard", label: "Formulários" },
   { path: "/dashboard/new", label: "Criar formulário" },
-  { path: "/dashboard/payment", label: "Pagamento" },
+  { path: "/dashboard/payment", label: "Assinatura" },
   { path: "/dashboard/profile", label: "Minha conta" },
 ];
 

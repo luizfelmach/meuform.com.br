@@ -62,10 +62,8 @@ export default function Page() {
           >
             <Card>
               <CardHeader>
-                <CardTitle>Nome do formulário</CardTitle>
-                <CardDescription>
-                  Esse nome serve para identificar o formulário.
-                </CardDescription>
+                <CardTitle>Criar do zero</CardTitle>
+                <CardDescription>Dê um nome ao seu formulário.</CardDescription>
               </CardHeader>
               <CardContent>
                 <FormField
