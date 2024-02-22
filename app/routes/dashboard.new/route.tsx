@@ -21,6 +21,14 @@ import {
 import { v4 as uuid } from "uuid";
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { prisma } from "@/lib/prisma";
+import {
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  Card,
+} from "@/components/ui/card";
 
 export default function Page() {
   const navigate = useNavigate();
@@ -55,30 +63,37 @@ export default function Page() {
             onSubmit={methods.handleSubmit(handleSubmit)}
             className="space-y-4"
           >
-            <FormField
-              name="name"
-              control={methods.control}
-              render={({ field }) => (
-                <FormItem className="sm:w-96 w-full">
-                  <FormControl>
-                    <Input
-                      placeholder="Nome do formulário"
-                      className="w-full h-11 border-none bg-accent text-accent-foreground"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              className="h-11 font-bold sm:w-auto w-full"
-              type="submit"
-              disabled={isSubmitting}
-            >
-              Começar a editar
-              {isSubmitting && <Loader className="animate-spin" />}
-            </Button>
+            <Card>
+              <CardHeader>
+                <CardTitle>Nome do formulário</CardTitle>
+                <CardDescription>
+                  Esse nome serve para identificar o formulário.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  name="name"
+                  control={methods.control}
+                  render={({ field }) => (
+                    <FormItem className="sm:w-96 w-full">
+                      <FormControl>
+                        <Input
+                          className="w-full h-11 border-none bg-accent text-accent-foreground"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+              <CardFooter className="flex justify-end">
+                <Button>
+                  Começar a editar
+                  {isSubmitting && <Loader className="animate-spin" />}
+                </Button>
+              </CardFooter>
+            </Card>
           </form>
         </FormProvider>
       </div>

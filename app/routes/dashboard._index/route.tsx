@@ -7,7 +7,6 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { Eye, Pencil, Plus, Share } from "lucide-react";
 import { HeaderDashboard } from "../dashboard/header";
-import { ContainerDashboard } from "../dashboard/container";
 import { Separator } from "@/components/ui/separator";
 import { getFlash } from "@/action/session";
 import { useFlash } from "@/components/hook/flash";

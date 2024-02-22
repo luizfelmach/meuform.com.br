@@ -1,6 +1,6 @@
 import { env } from "@/lib/env";
 import { LoaderFunctionArgs, json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useSubmit } from "@remix-run/react";
 import { loadStripe } from "@stripe/stripe-js";
 import { stripe } from "@/lib/stripe";
 import { ensureAuthenticated } from "@/action/middlewares";
@@ -11,8 +11,16 @@ import {
 import { ContainerDashboard } from "../dashboard/container";
 import { HeaderDashboard } from "../dashboard/header";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Page() {
+  const submit = useSubmit();
   const { clientSecret, stripePublicKey } = useLoaderData<typeof loader>();
   const stripePromise = loadStripe(stripePublicKey);
   return (
