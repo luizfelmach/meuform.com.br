@@ -42,10 +42,11 @@ export default function Page() {
             <Input
               className="max-w-96 h-11 border-none bg-accent text-accent-foreground"
               defaultValue={name}
+              disabled
             />
           </CardContent>
           <CardFooter className="flex justify-end">
-            <Button>Salvar</Button>
+            <Button disabled>Salvar</Button>
           </CardFooter>
         </Card>
         <Card>
@@ -58,7 +59,9 @@ export default function Page() {
             </CardDescription>
           </CardHeader>
           <CardFooter className="flex justify-end">
-            <Button variant={"destructive"}>Deletar</Button>
+            <Button variant={"destructive"} disabled>
+              Deletar
+            </Button>
           </CardFooter>
         </Card>
       </div>
