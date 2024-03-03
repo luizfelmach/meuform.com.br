@@ -1,4 +1,3 @@
-import { ensureAuthenticated } from "@/action/middlewares";
 import { ReplyBox } from "@/components/interface/reply-box";
 import { FormType } from "@/form/types";
 import { prisma } from "@/lib/prisma";
@@ -21,7 +20,6 @@ export default function Page() {
     canProceed,
     handleBack,
     handleNext,
-    handleComplete,
     completed,
     methods,
   } = useReplyForm({ form });
