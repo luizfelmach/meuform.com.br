@@ -20,3 +20,4 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return await redirectSession("/dashboard", session);
 }
+
