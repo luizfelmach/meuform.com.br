@@ -25,13 +25,22 @@ model PassResetToken {
 }
 
 model Form {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
   name       String
   screens    Json[]
   endScreen  Json
-  answers    Json[]
-  Customer   Customer? @relation(fields: [customerId], references: [id])
-  customerId String?   @db.ObjectId
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  answers    FormAnswer[]
+  Customer   Customer?    @relation(fields: [customerId], references: [id])
+  customerId String?      @db.ObjectId
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model FormAnswer {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  data      Json
+  Form      Form?    @relation(fields: [formId], references: [id])
+  formId    String?  @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

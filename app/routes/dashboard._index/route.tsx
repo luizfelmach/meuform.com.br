@@ -86,6 +86,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const forms = await prisma.form.findMany({
     where: { customerId: id },
     orderBy: { createdAt: "desc" },
+    include: {
+      answers: true,
+    },
   });
 
   const response: LoaderResponse[] = forms.map((form) => {

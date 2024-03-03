@@ -1,14 +1,22 @@
+import * as yup from "yup";
 import { ReplyBox } from "@/components/interface/reply-box";
 import { FormType } from "@/form/types";
 import { prisma } from "@/lib/prisma";
-import { LoaderFunctionArgs, json, redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  json,
+  redirect,
+} from "@remix-run/node";
+import { useLoaderData, useSubmit } from "@remix-run/react";
 import { useReplyForm } from "./reply/hooks";
 import { FormProvider } from "react-hook-form";
 import { RevealSlide } from "@/components/interface/reveal-slide";
 import { ReplyInput } from "./reply/components/reply-input";
+import { ensureBody } from "@/action/middlewares";
 
 export default function Page() {
+  const submit = useSubmit();
   const { response } = useLoaderData<typeof loader>();
   const form: FormType = response as any;
 
@@ -22,6 +30,7 @@ export default function Page() {
     handleNext,
     completed,
     methods,
+    handleComplete,
   } = useReplyForm({ form });
 
   const {
@@ -29,7 +38,8 @@ export default function Page() {
   } = methods;
 
   async function handleSubmit(data: any) {
-    console.log(data);
+    submit(data, { method: "POST" });
+    handleComplete();
   }
 
   return (
@@ -81,6 +91,10 @@ export default function Page() {
   );
 }
 
+const replySchema = yup.object();
+
+type replyType = yup.InferType<typeof replySchema>;
+
 export async function loader({ params }: LoaderFunctionArgs) {
   const response = await prisma.form
     .findFirst({ where: { id: params.id } })
@@ -89,4 +103,22 @@ export async function loader({ params }: LoaderFunctionArgs) {
   if (!response) return redirect("/");
 
   return json({ response });
+}
+
+export async function action({ params, request }: ActionFunctionArgs) {
+  const body = await ensureBody<replyType>(replySchema, request);
+  const response = await prisma.form
+    .findFirst({ where: { id: params.id } })
+    .catch(() => null);
+
+  if (!response) return redirect("/");
+
+  await prisma.formAnswer.create({
+    data: {
+      data: body,
+      formId: response.id,
+    },
+  });
+
+  return json({});
 }
